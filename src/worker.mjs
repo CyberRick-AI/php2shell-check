@@ -11,6 +11,7 @@
 import core from './core.js';
 
 const enc = new TextEncoder();
+const MAX_REDIRECTS = 5;
 
 async function sha256(s) {
   return new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(s)));
@@ -70,18 +71,29 @@ async function handleScan(request, env, url) {
   try { target = core.normalizeTarget(url.searchParams.get('url'), { allowPrivate: env.ALLOW_PRIVATE === '1' }); }
   catch (e) { return json({ error: e.message }, 400); }
 
+  // Follow redirects by hand so every hop goes through the same address checks as the original target.
   const started = Date.now();
+  const redirects = [];
+  let current = target;
   let res;
-  try {
-    res = await fetch(target.href, {
-      method: 'GET',
-      redirect: 'follow',
-      headers: { 'user-agent': 'CyberRick-PHP2Shell-Check/1.0', accept: 'text/html,*/*' },
-      signal: AbortSignal.timeout(8000),
-    });
-  } catch (e) {
-    const timedOut = e && (e.name === 'TimeoutError' || e.name === 'AbortError');
-    return json({ error: timedOut ? 'The site took too long to respond (8s)' : 'Could not reach the site. Check the address, or the site may block scanners.' }, 502);
+  for (;;) {
+    try {
+      res = await fetch(current.href, {
+        method: 'GET',
+        redirect: 'manual',
+        headers: { 'user-agent': 'CyberRick-PHP2Shell-Check/1.0', accept: 'text/html,*/*' },
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch (e) {
+      const timedOut = e && (e.name === 'TimeoutError' || e.name === 'AbortError');
+      return json({ error: timedOut ? 'The site took too long to respond (8s)' : 'Could not reach the site. Check the address, or the site may block scanners.' }, 502);
+    }
+    const loc = res.headers.get('location');
+    if (!(res.status >= 300 && res.status < 400 && loc)) break;
+    if (redirects.length >= MAX_REDIRECTS) return json({ error: `Too many redirects (more than ${MAX_REDIRECTS})` }, 502);
+    redirects.push(current.href);
+    try { current = core.normalizeTarget(new URL(loc, current).href, { allowPrivate: env.ALLOW_PRIVATE === '1' }); }
+    catch (e) { return json({ error: `The site redirected to an address that is not allowed: ${e.message}` }, 400); }
   }
 
   const headers = {};
@@ -95,7 +107,8 @@ async function handleScan(request, env, url) {
   return json({
     url: target.href,
     host: target.hostname,
-    finalUrl: res.url || target.href,
+    finalUrl: current.href,
+    redirects,
     status: res.status,
     ms: Date.now() - started,
     scannedAt: new Date().toISOString(),

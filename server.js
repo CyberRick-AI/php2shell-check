@@ -49,21 +49,49 @@ function request(urlObj, ip) {
   });
 }
 
-async function scan(rawUrl) {
-  const u = core.normalizeTarget(rawUrl, { allowPrivate: ALLOW_PRIVATE });
-  const addrs = await dns.lookup(u.hostname, { all: true });
-  const ip = addrs[0].address;
-  // Pin the resolved IP so DNS rebinding cannot swap in an internal address after the check.
-  if (!ALLOW_PRIVATE && addrs.some((a) => isPrivateIp(a.address))) throw new Error('Private, internal and local addresses are blocked');
+const MAX_REDIRECTS = 5;
 
+// Resolves one hop, refuses private addresses, then fetches it pinned to the checked IP
+// so DNS rebinding cannot swap in an internal address after the check.
+async function fetchHop(u, allowPrivate) {
+  const addrs = await dns.lookup(u.hostname, { all: true });
+  if (!allowPrivate && addrs.some((a) => isPrivateIp(a.address))) throw new Error('Private, internal and local addresses are blocked');
+  const ip = addrs[0].address;
+  return { ip, res: await request(u, ip) };
+}
+
+// Follows redirects (most sites send http->https or apex->www first) and analyzes the final page.
+// Every hop goes through the same address checks as the original target.
+async function scan(rawUrl, { allowPrivate = ALLOW_PRIVATE } = {}) {
+  const target = core.normalizeTarget(rawUrl, { allowPrivate });
   const started = Date.now();
-  const res = await request(u, ip);
+  const redirects = [];
+  const hops = [];
+  let u = target;
+  let ip;
+  for (;;) {
+    const hop = await fetchHop(u, allowPrivate);
+    ip = hop.ip;
+    hops.push(hop.res);
+    const loc = hop.res.headers.location;
+    if (!(hop.res.status >= 300 && hop.res.status < 400 && loc)) break;
+    if (redirects.length >= MAX_REDIRECTS) throw new Error(`Too many redirects (more than ${MAX_REDIRECTS})`);
+    redirects.push(u.href);
+    u = core.normalizeTarget(new URL(loc, u).href, { allowPrivate });
+  }
+
+  const res = hops[hops.length - 1];
   const headers = {};
   for (const [k, v] of Object.entries(res.headers)) headers[k.toLowerCase()] = [].concat(v).join(', ');
-  const cookies = [].concat(res.headers['set-cookie'] || []).join(';');
+  // PHP often answers the redirect itself, so keep its version header and cookies if the final page drops them.
+  if (!/php/i.test(headers['x-powered-by'] || '')) {
+    const php = hops.map((h) => [].concat(h.headers['x-powered-by'] || []).join(', ')).find((v) => /php/i.test(v));
+    if (php) headers['x-powered-by'] = php;
+  }
+  const cookies = hops.flatMap((h) => [].concat(h.headers['set-cookie'] || [])).join(';');
 
   return {
-    url: u.href, host: u.hostname, ip, status: res.status, ms: Date.now() - started,
+    url: target.href, host: target.hostname, finalUrl: u.href, redirects, ip, status: res.status, ms: Date.now() - started,
     scannedAt: new Date().toISOString(),
     ...core.analyze({ headers, cookies, body: res.body }),
   };

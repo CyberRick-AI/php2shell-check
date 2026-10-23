@@ -104,7 +104,7 @@ function render(d) {
   const R = d.report, H = R.headline;
   const ipPart = d.ip ? ' (' + esc(d.ip) + ')' : '';
   let h = '<div class="card banner ' + H.level + '"><h3>' + esc(H.title) + '</h3><p>' + esc(H.sub) + '</p>'
-    + '<div class="meta">' + esc(d.host) + ipPart + ' · HTTP ' + esc(d.status) + ' · PHP version: <b>' + esc(d.phpVersion || 'hidden') + '</b> · ' + esc(new Date(d.scannedAt).toLocaleString()) + '</div></div>';
+    + '<div class="meta">' + esc(d.host) + (d.finalUrl && d.finalUrl !== d.url ? ' → ' + esc(d.finalUrl) : '') + ipPart + ' · HTTP ' + esc(d.status) + ' · PHP version: <b>' + esc(d.phpVersion || 'hidden') + '</b> · ' + esc(new Date(d.scannedAt).toLocaleString()) + '</div></div>';
   h += '<div class="tools"><button class="g" id="cp" type="button">Copy report</button><button class="g" id="pr" type="button">Print / Save PDF</button></div>';
   h += '<div class="card"><h2>Vulnerability status</h2>' + R.cves.map((c) =>
     '<div class="cve"><span class="pill ' + esc(c.status) + '">' + esc(LBL[c.status] || c.status) + '</span><div><b>' + esc(c.id) + ' · ' + esc(c.title) + '</b><span>' + esc(c.detail) + '</span></div></div>').join('') + '</div>';

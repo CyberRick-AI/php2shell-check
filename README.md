@@ -43,6 +43,7 @@ Open http://localhost:3000 and scan any of these (include `http://`):
 | `http://localhost:8081/hidden` | Can't confirm (PHP session cookie, no version) |
 | `http://localhost:8081/wordpress` | Can't confirm (WordPress markers) |
 | `http://localhost:8081/nophp` | No PHP detected |
+| `http://localhost:8081/redirect` | Follows the redirect, then Vulnerable (PHP 8.3.30) |
 
 CLI, prints the JSON report:
 

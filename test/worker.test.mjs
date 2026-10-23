@@ -135,3 +135,37 @@ test('health reports the mode', async () => {
   assert.strictEqual((await (await call('/api/health', { key: null, e: pub() })).json()).mode, 'public');
   assert.strictEqual((await (await call('/api/health', { key: null })).json()).mode, 'private');
 });
+
+// ---- redirects ----
+function routes(map) {
+  globalThis.fetch = async (url, init) => {
+    assert.strictEqual(init.redirect, 'manual');
+    const [status, headers] = map[String(url)] || [404, {}];
+    return new Response(status >= 300 && status < 400 ? null : '<html></html>', { status, headers });
+  };
+}
+
+test('follows redirects to the final page', async () => {
+  routes({
+    'https://client.example/': [301, { location: 'https://www.client.example/' }],
+    'https://www.client.example/': [200, { 'x-powered-by': 'PHP/8.3.30' }],
+  });
+  const d = await (await call('/api/scan?url=client.example')).json();
+  assert.strictEqual(d.verdict, 'vulnerable');
+  assert.strictEqual(d.finalUrl, 'https://www.client.example/');
+  assert.deepStrictEqual(d.redirects, ['https://client.example/']);
+});
+
+test('refuses a redirect to an internal address', async () => {
+  routes({ 'https://client.example/': [302, { location: 'http://169.254.169.254/latest/meta-data/' }] });
+  const r = await call('/api/scan?url=client.example');
+  assert.strictEqual(r.status, 400);
+  assert.match((await r.json()).error, /not allowed/);
+});
+
+test('stops after too many redirects', async () => {
+  routes({ 'https://a.example/': [302, { location: 'https://b.example/' }], 'https://b.example/': [302, { location: 'https://a.example/' }] });
+  const r = await call('/api/scan?url=a.example');
+  assert.strictEqual(r.status, 502);
+  assert.match((await r.json()).error, /Too many redirects/);
+});

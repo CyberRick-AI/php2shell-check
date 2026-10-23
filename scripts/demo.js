@@ -16,6 +16,7 @@ const PROFILES = {
   hidden: { Server: 'nginx', 'Set-Cookie': 'PHPSESSID=demo; path=/' },
   wordpress: { Server: 'LiteSpeed', body: '<link rel="stylesheet" href="/wp-content/themes/demo/style.css">' },
   nophp: { Server: 'nginx' },
+  redirect: { status: 301, Location: '/vulnerable', Server: 'nginx' },
 };
 
 function handle(req, res) {
@@ -25,8 +26,8 @@ function handle(req, res) {
     res.writeHead(200, { 'Content-Type': 'text/html' });
     return res.end('<h1>Demo targets</h1><ul>' + Object.keys(PROFILES).map((k) => `<li>http://localhost:${TARGET_PORT}/${k}</li>`).join('') + '</ul>');
   }
-  const { body = '<html><body>Demo site</body></html>', ...headers } = p;
-  res.writeHead(200, { 'Content-Type': 'text/html', ...headers });
+  const { body = '<html><body>Demo site</body></html>', status = 200, ...headers } = p;
+  res.writeHead(status, { 'Content-Type': 'text/html', ...headers });
   res.end(body);
 }
 
