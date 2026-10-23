@@ -1,0 +1,764 @@
+{
+  "vulnerable-ubuntu": {
+    "phpVersion": "8.3.30",
+    "evidence": [
+      "X-Powered-By: PHP/8.3.30"
+    ],
+    "verdict": "vulnerable",
+    "text": "PHP 8.3.30 is below the fixed release 8.3.36.",
+    "report": {
+      "headline": {
+        "level": "bad",
+        "title": "Action needed: PHP is not patched for PHP2Shell",
+        "sub": "This site discloses a PHP version below the fixed release. Update the PHP runtime, then restart."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "vulnerable",
+          "detail": "Only updating PHP fixes this. No setting fully mitigates it."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "vulnerable",
+          "detail": "Updating is the only complete fix. Turning off session upload progress blocks the confirmed session paths but not other variants."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "unfixed",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "Update PHP 8.3 from 8.3.30 to 8.3.36 or newer.",
+        "Update the PHP runtime itself. Updating WordPress, Laravel or any app does not update PHP; it comes from the server package, the host panel, or the container image.",
+        "Restart Apache, PHP-FPM and any long-running PHP workers after updating."
+      ],
+      "disable": [
+        "Set session.upload_progress.enabled=0 in php.ini or the PHP-FPM pool config, then restart every worker. Do NOT rely on ini_set() or .user.ini. This removes a required condition for CVE-2026-115560 and blocks one PHP2Shell path. Trade-off: upload progress bars stop working.",
+        "Until you can update (reduces exposure, does NOT fix): set memory_limit=-1 so apps cannot override it, keep post_max_size low, and enforce request-size limits at the web server or proxy. Do not use RLIMIT_AS or RLIMIT_DATA.",
+        "Search the app code for session.serialize_handler. The risky pattern is switching it with ini_set() before session_start(). local-audit.js does this for you."
+      ],
+      "notes": [
+        "This looks like a distro build. Vendors backport fixes without changing version numbers, so check the package changelog before trusting the version string."
+      ],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  },
+  "vulnerable-82": {
+    "phpVersion": "8.2.20",
+    "evidence": [
+      "X-Powered-By: PHP/8.2.20"
+    ],
+    "verdict": "vulnerable",
+    "text": "PHP 8.2.20 is below the fixed release 8.2.35.",
+    "report": {
+      "headline": {
+        "level": "bad",
+        "title": "Action needed: PHP is not patched for PHP2Shell",
+        "sub": "This site discloses a PHP version below the fixed release. Update the PHP runtime, then restart."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "vulnerable",
+          "detail": "Only updating PHP fixes this. No setting fully mitigates it."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "vulnerable",
+          "detail": "Updating is the only complete fix. Turning off session upload progress blocks the confirmed session paths but not other variants."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "unfixed",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "Update PHP 8.2 from 8.2.20 to 8.2.35 or newer.",
+        "Update the PHP runtime itself. Updating WordPress, Laravel or any app does not update PHP; it comes from the server package, the host panel, or the container image.",
+        "Restart Apache, PHP-FPM and any long-running PHP workers after updating.",
+        "PHP 8.2 reaches end of life on Dec 31, 2026. Plan a move to 8.3 or newer."
+      ],
+      "disable": [
+        "Set session.upload_progress.enabled=0 in php.ini or the PHP-FPM pool config, then restart every worker. Do NOT rely on ini_set() or .user.ini. This removes a required condition for CVE-2026-115560 and blocks one PHP2Shell path. Trade-off: upload progress bars stop working.",
+        "Until you can update (reduces exposure, does NOT fix): set memory_limit=-1 so apps cannot override it, keep post_max_size low, and enforce request-size limits at the web server or proxy. Do not use RLIMIT_AS or RLIMIT_DATA.",
+        "Search the app code for session.serialize_handler. The risky pattern is switching it with ini_set() before session_start(). local-audit.js does this for you."
+      ],
+      "notes": [],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  },
+  "vulnerable-85": {
+    "phpVersion": "8.5.3",
+    "evidence": [
+      "X-Powered-By: PHP/8.5.3",
+      "Behind Cloudflare"
+    ],
+    "verdict": "vulnerable",
+    "text": "PHP 8.5.3 is below the fixed release 8.5.12.",
+    "report": {
+      "headline": {
+        "level": "bad",
+        "title": "Action needed: PHP is not patched for PHP2Shell",
+        "sub": "This site discloses a PHP version below the fixed release. Update the PHP runtime, then restart."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "vulnerable",
+          "detail": "Only updating PHP fixes this. No setting fully mitigates it."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "vulnerable",
+          "detail": "Updating is the only complete fix. Turning off session upload progress blocks the confirmed session paths but not other variants."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "unfixed",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "Update PHP 8.5 from 8.5.3 to 8.5.12 or newer.",
+        "Update the PHP runtime itself. Updating WordPress, Laravel or any app does not update PHP; it comes from the server package, the host panel, or the container image.",
+        "Restart Apache, PHP-FPM and any long-running PHP workers after updating."
+      ],
+      "disable": [
+        "Set session.upload_progress.enabled=0 in php.ini or the PHP-FPM pool config, then restart every worker. Do NOT rely on ini_set() or .user.ini. This removes a required condition for CVE-2026-115560 and blocks one PHP2Shell path. Trade-off: upload progress bars stop working.",
+        "Until you can update (reduces exposure, does NOT fix): set memory_limit=-1 so apps cannot override it, keep post_max_size low, and enforce request-size limits at the web server or proxy. Do not use RLIMIT_AS or RLIMIT_DATA.",
+        "On PHP 8.5 also set fatal_error_backtraces=0 until updated.",
+        "Search the app code for session.serialize_handler. The risky pattern is switching it with ini_set() before session_start(). local-audit.js does this for you."
+      ],
+      "notes": [
+        "Behind Cloudflare: its WAF rules help, but attackers are changing payloads to get around them. Treat it as a stopgap, not a fix."
+      ],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  },
+  "patched-84": {
+    "phpVersion": "8.4.27",
+    "evidence": [
+      "X-Powered-By: PHP/8.4.27"
+    ],
+    "verdict": "patched",
+    "text": "PHP 8.4.27 is at or above the fixed release (8.4.27).",
+    "report": {
+      "headline": {
+        "level": "ok",
+        "title": "PHP2Shell: version looks patched",
+        "sub": "The disclosed version is at or above the fixed release. One setting still needs attention for CVE-2026-115560."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "patched",
+          "detail": "Version at or above fix. Only patching fixes this one; config changes do not."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "patched",
+          "detail": "Version at or above fix."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "unfixed",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "Nothing to patch for PHP2Shell based on the disclosed version. Confirm Apache and PHP-FPM were restarted after the update, since old workers keep running old code.",
+        "After updating, review memory_limit and post_max_size: the fix adds a hard memory limit that ends the process and skips shutdown handlers."
+      ],
+      "disable": [
+        "Set session.upload_progress.enabled=0 in php.ini or the PHP-FPM pool config, then restart every worker. Do NOT rely on ini_set() or .user.ini. This removes a required condition for CVE-2026-115560 and blocks one PHP2Shell path. Trade-off: upload progress bars stop working.",
+        "Search the app code for session.serialize_handler. The risky pattern is switching it with ini_set() before session_start(). local-audit.js does this for you."
+      ],
+      "notes": [],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  },
+  "patched-cloudflare": {
+    "phpVersion": "8.3.36",
+    "evidence": [
+      "X-Powered-By: PHP/8.3.36",
+      "Behind Cloudflare"
+    ],
+    "verdict": "patched",
+    "text": "PHP 8.3.36 is at or above the fixed release (8.3.36).",
+    "report": {
+      "headline": {
+        "level": "ok",
+        "title": "PHP2Shell: version looks patched",
+        "sub": "The disclosed version is at or above the fixed release. One setting still needs attention for CVE-2026-115560."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "patched",
+          "detail": "Version at or above fix. Only patching fixes this one; config changes do not."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "patched",
+          "detail": "Version at or above fix."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "unfixed",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "Nothing to patch for PHP2Shell based on the disclosed version. Confirm Apache and PHP-FPM were restarted after the update, since old workers keep running old code.",
+        "After updating, review memory_limit and post_max_size: the fix adds a hard memory limit that ends the process and skips shutdown handlers."
+      ],
+      "disable": [
+        "Set session.upload_progress.enabled=0 in php.ini or the PHP-FPM pool config, then restart every worker. Do NOT rely on ini_set() or .user.ini. This removes a required condition for CVE-2026-115560 and blocks one PHP2Shell path. Trade-off: upload progress bars stop working.",
+        "Search the app code for session.serialize_handler. The risky pattern is switching it with ini_set() before session_start(). local-audit.js does this for you."
+      ],
+      "notes": [
+        "Behind Cloudflare: its WAF rules help, but attackers are changing payloads to get around them. Treat it as a stopgap, not a fix."
+      ],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  },
+  "eol-74-modphp": {
+    "phpVersion": "7.4.33",
+    "evidence": [
+      "X-Powered-By: PHP/7.4.33",
+      "Server banner mentions mod_php"
+    ],
+    "verdict": "vulnerable",
+    "text": "PHP 7.4 is end-of-life upstream: no official release fixes it. It is exposed unless the host backported the patch.",
+    "report": {
+      "headline": {
+        "level": "bad",
+        "title": "Action needed: PHP is not patched for PHP2Shell",
+        "sub": "This site discloses a PHP version below the fixed release. Update the PHP runtime, then restart."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "vulnerable",
+          "detail": "Only updating PHP fixes this. No setting fully mitigates it."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "vulnerable",
+          "detail": "Updating is the only complete fix. Turning off session upload progress blocks the confirmed session paths but not other variants."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "unfixed",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "PHP 7.4 gets no upstream fix. Move to a supported branch (8.5.12, 8.4.27 or 8.3.36 and up), or confirm the host has backported the fix (source backports exist for 7.4, 8.0 and 8.1).",
+        "Update the PHP runtime itself. Updating WordPress, Laravel or any app does not update PHP; it comes from the server package, the host panel, or the container image.",
+        "Restart Apache, PHP-FPM and any long-running PHP workers after updating."
+      ],
+      "disable": [
+        "Set session.upload_progress.enabled=0 in php.ini or the PHP-FPM pool config, then restart every worker. Do NOT rely on ini_set() or .user.ini. This removes a required condition for CVE-2026-115560 and blocks one PHP2Shell path. Trade-off: upload progress bars stop working.",
+        "Until you can update (reduces exposure, does NOT fix): set memory_limit=-1 so apps cannot override it, keep post_max_size low, and enforce request-size limits at the web server or proxy. Do not use RLIMIT_AS or RLIMIT_DATA.",
+        "Search the app code for session.serialize_handler. The risky pattern is switching it with ini_set() before session_start(). local-audit.js does this for you."
+      ],
+      "notes": [
+        "Server banner mentions mod_php, the highest-risk setup: a demonstrated exploit triggers before any app code runs."
+      ],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  },
+  "server-header": {
+    "phpVersion": "8.2.30",
+    "evidence": [
+      "Server: Apache/2.4.58 PHP/8.2.30 mod_php",
+      "Server banner mentions mod_php"
+    ],
+    "verdict": "vulnerable",
+    "text": "PHP 8.2.30 is below the fixed release 8.2.35.",
+    "report": {
+      "headline": {
+        "level": "bad",
+        "title": "Action needed: PHP is not patched for PHP2Shell",
+        "sub": "This site discloses a PHP version below the fixed release. Update the PHP runtime, then restart."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "vulnerable",
+          "detail": "Only updating PHP fixes this. No setting fully mitigates it."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "vulnerable",
+          "detail": "Updating is the only complete fix. Turning off session upload progress blocks the confirmed session paths but not other variants."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "unfixed",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "Update PHP 8.2 from 8.2.30 to 8.2.35 or newer.",
+        "Update the PHP runtime itself. Updating WordPress, Laravel or any app does not update PHP; it comes from the server package, the host panel, or the container image.",
+        "Restart Apache, PHP-FPM and any long-running PHP workers after updating.",
+        "PHP 8.2 reaches end of life on Dec 31, 2026. Plan a move to 8.3 or newer."
+      ],
+      "disable": [
+        "Set session.upload_progress.enabled=0 in php.ini or the PHP-FPM pool config, then restart every worker. Do NOT rely on ini_set() or .user.ini. This removes a required condition for CVE-2026-115560 and blocks one PHP2Shell path. Trade-off: upload progress bars stop working.",
+        "Until you can update (reduces exposure, does NOT fix): set memory_limit=-1 so apps cannot override it, keep post_max_size low, and enforce request-size limits at the web server or proxy. Do not use RLIMIT_AS or RLIMIT_DATA.",
+        "Search the app code for session.serialize_handler. The risky pattern is switching it with ini_set() before session_start(). local-audit.js does this for you."
+      ],
+      "notes": [
+        "Server banner mentions mod_php, the highest-risk setup: a demonstrated exploit triggers before any app code runs."
+      ],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  },
+  "future-86": {
+    "phpVersion": "8.6.0",
+    "evidence": [
+      "X-Powered-By: PHP/8.6.0"
+    ],
+    "verdict": "unknown",
+    "text": "PHP 8.6.0 is newer than any branch in the advisory. Verify manually.",
+    "report": {
+      "headline": {
+        "level": "warn",
+        "title": "Cannot confirm: version is hidden",
+        "sub": "The site looks like PHP but does not reveal its version. Check the server directly."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "unknown",
+          "detail": "Only updating PHP fixes this. No setting fully mitigates it."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "unknown",
+          "detail": "Updating is the only complete fix. Turning off session upload progress blocks the confirmed session paths but not other variants."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "unfixed",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "Confirm the PHP version that serves web requests: run php -v and php-fpm -v, check the hosting panel, or run local-audit.js on the server.",
+        "Required minimums: 8.5.12, 8.4.27, 8.3.36 or 8.2.35. Anything on 8.1 or older needs an upgrade or a confirmed vendor backport.",
+        "On Debian, Ubuntu or RHEL builds, check the package changelog for CVE-2026-109618; vendors backport fixes under old version numbers.",
+        "If patched, still confirm Apache and PHP-FPM were restarted afterward."
+      ],
+      "disable": [
+        "Set session.upload_progress.enabled=0 in php.ini or the PHP-FPM pool config, then restart every worker. Do NOT rely on ini_set() or .user.ini. This removes a required condition for CVE-2026-115560 and blocks one PHP2Shell path. Trade-off: upload progress bars stop working.",
+        "Search the app code for session.serialize_handler. The risky pattern is switching it with ini_set() before session_start(). local-audit.js does this for you."
+      ],
+      "notes": [],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  },
+  "ancient-53": {
+    "phpVersion": "5.3.29",
+    "evidence": [
+      "X-Powered-By: PHP/5.3.29"
+    ],
+    "verdict": "unknown",
+    "text": "PHP 5.3.29 predates the 5.4 floor in the advisory but is long dead. Treat as unsafe and verify.",
+    "report": {
+      "headline": {
+        "level": "warn",
+        "title": "Cannot confirm: version is hidden",
+        "sub": "The site looks like PHP but does not reveal its version. Check the server directly."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "unknown",
+          "detail": "Only updating PHP fixes this. No setting fully mitigates it."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "unknown",
+          "detail": "Updating is the only complete fix. Turning off session upload progress blocks the confirmed session paths but not other variants."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "unfixed",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "Confirm the PHP version that serves web requests: run php -v and php-fpm -v, check the hosting panel, or run local-audit.js on the server.",
+        "Required minimums: 8.5.12, 8.4.27, 8.3.36 or 8.2.35. Anything on 8.1 or older needs an upgrade or a confirmed vendor backport.",
+        "On Debian, Ubuntu or RHEL builds, check the package changelog for CVE-2026-109618; vendors backport fixes under old version numbers.",
+        "If patched, still confirm Apache and PHP-FPM were restarted afterward."
+      ],
+      "disable": [
+        "Set session.upload_progress.enabled=0 in php.ini or the PHP-FPM pool config, then restart every worker. Do NOT rely on ini_set() or .user.ini. This removes a required condition for CVE-2026-115560 and blocks one PHP2Shell path. Trade-off: upload progress bars stop working.",
+        "Search the app code for session.serialize_handler. The risky pattern is switching it with ini_set() before session_start(). local-audit.js does this for you."
+      ],
+      "notes": [],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  },
+  "hidden-cookie": {
+    "phpVersion": null,
+    "evidence": [
+      "PHPSESSID cookie set"
+    ],
+    "verdict": "unknown",
+    "text": "Site looks like PHP but does not disclose its version.",
+    "report": {
+      "headline": {
+        "level": "warn",
+        "title": "Cannot confirm: version is hidden",
+        "sub": "The site looks like PHP but does not reveal its version. Check the server directly."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "unknown",
+          "detail": "Only updating PHP fixes this. No setting fully mitigates it."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "unknown",
+          "detail": "Updating is the only complete fix. Turning off session upload progress blocks the confirmed session paths but not other variants."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "unfixed",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "Confirm the PHP version that serves web requests: run php -v and php-fpm -v, check the hosting panel, or run local-audit.js on the server.",
+        "Required minimums: 8.5.12, 8.4.27, 8.3.36 or 8.2.35. Anything on 8.1 or older needs an upgrade or a confirmed vendor backport.",
+        "On Debian, Ubuntu or RHEL builds, check the package changelog for CVE-2026-109618; vendors backport fixes under old version numbers.",
+        "If patched, still confirm Apache and PHP-FPM were restarted afterward."
+      ],
+      "disable": [
+        "Set session.upload_progress.enabled=0 in php.ini or the PHP-FPM pool config, then restart every worker. Do NOT rely on ini_set() or .user.ini. This removes a required condition for CVE-2026-115560 and blocks one PHP2Shell path. Trade-off: upload progress bars stop working.",
+        "Search the app code for session.serialize_handler. The risky pattern is switching it with ini_set() before session_start(). local-audit.js does this for you."
+      ],
+      "notes": [],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  },
+  "hidden-wordpress": {
+    "phpVersion": null,
+    "evidence": [
+      "WordPress markers in HTML",
+      "LiteSpeed server"
+    ],
+    "verdict": "unknown",
+    "text": "Site looks like PHP but does not disclose its version.",
+    "report": {
+      "headline": {
+        "level": "warn",
+        "title": "Cannot confirm: version is hidden",
+        "sub": "The site looks like PHP but does not reveal its version. Check the server directly."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "unknown",
+          "detail": "Only updating PHP fixes this. No setting fully mitigates it."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "unknown",
+          "detail": "Updating is the only complete fix. Turning off session upload progress blocks the confirmed session paths but not other variants."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "unfixed",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "Confirm the PHP version that serves web requests: run php -v and php-fpm -v, check the hosting panel, or run local-audit.js on the server.",
+        "Required minimums: 8.5.12, 8.4.27, 8.3.36 or 8.2.35. Anything on 8.1 or older needs an upgrade or a confirmed vendor backport.",
+        "On Debian, Ubuntu or RHEL builds, check the package changelog for CVE-2026-109618; vendors backport fixes under old version numbers.",
+        "If patched, still confirm Apache and PHP-FPM were restarted afterward."
+      ],
+      "disable": [
+        "Set session.upload_progress.enabled=0 in php.ini or the PHP-FPM pool config, then restart every worker. Do NOT rely on ini_set() or .user.ini. This removes a required condition for CVE-2026-115560 and blocks one PHP2Shell path. Trade-off: upload progress bars stop working.",
+        "Search the app code for session.serialize_handler. The risky pattern is switching it with ini_set() before session_start(). local-audit.js does this for you."
+      ],
+      "notes": [],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  },
+  "no-php": {
+    "phpVersion": null,
+    "evidence": [],
+    "verdict": "not-detected",
+    "text": "No PHP indicators found.",
+    "report": {
+      "headline": {
+        "level": "neutral",
+        "title": "No PHP detected",
+        "sub": "Nothing here points to PHP. This is not proof the site is safe."
+      },
+      "cves": [
+        {
+          "id": "CVE-2026-109618",
+          "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+          "status": "not-detected",
+          "detail": "Only updating PHP fixes this. No setting fully mitigates it."
+        },
+        {
+          "id": "CVE-2026-109619",
+          "title": "RCE via stale global state (CVSS v4 9.2)",
+          "status": "not-detected",
+          "detail": "Updating is the only complete fix. Turning off session upload progress blocks the confirmed session paths but not other variants."
+        },
+        {
+          "id": "CVE-2026-115560",
+          "title": "Possible code execution in an uncommon session setup",
+          "status": "not-detected",
+          "detail": "No fixed PHP release exists yet, so no version can be called patched. Exposure depends on server config and app code, which cannot be seen from outside."
+        }
+      ],
+      "patch": [
+        "No PHP found at this address. If PHP runs on a separate backend or origin, scan that address instead."
+      ],
+      "disable": [],
+      "notes": [],
+      "covered": [
+        "PHP version the site discloses in response headers, compared with the fixed releases (8.5.12, 8.4.27, 8.3.36, 8.2.35)",
+        "Signs the site runs PHP (PHPSESSID cookie, WordPress markers, PHP banners)",
+        "Server hints that raise risk (mod_php) and Cloudflare in front",
+        "Status of CVE-2026-115560 (no fixed release exists yet)"
+      ],
+      "notCovered": [
+        "Whether the exploit actually works. This is a passive check; it sends no attack traffic",
+        "Sites that hide their version (expose_php=Off or a proxy strips headers). They come back \"unknown\"",
+        "Distro backports: a fixed package can show an old version number",
+        "Whether workers were restarted after patching",
+        "session.upload_progress.enabled, memory limits and other settings: not visible from outside",
+        "App code that switches session.serialize_handler (needed for CVE-2026-115560). Use local-audit.js on the server",
+        "Other PHP, CMS or plugin vulnerabilities",
+        "Multiple PHP versions behind one domain, or a different PHP on the CLI than on the web"
+      ]
+    },
+    "caveat": "Passive check: reads response headers only. It does not test the exploit."
+  }
+}

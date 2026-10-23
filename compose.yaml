@@ -1,0 +1,11 @@
+# docker compose up -d   ->  http://localhost:3000
+services:
+  php2shell-check:
+    build: .
+    restart: unless-stopped
+    ports:
+      # Only this computer can reach it. To use it from your phone on the LAN, change to "3000:3000"
+      # AND set ACCESS_KEY below, so other people on the network can't use it as a scanner.
+      - "127.0.0.1:3000:3000"
+    environment:
+      ACCESS_KEY: ${ACCESS_KEY:-}

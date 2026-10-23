@@ -1,0 +1,19 @@
+{
+  "name": "php2shell-check",
+  "version": "1.1.0",
+  "description": "Passive, self-hosted PHP vulnerability exposure scanner (PHP2Shell CVE-2026-109618 / -109619, CVE-2026-115560) with a plain-English patch report. Installable PWA, CLI and Docker. Zero dependencies.",
+  "license": "MIT",
+  "private": true,
+  "repository": { "type": "git", "url": "https://github.com/CyberRick-AI/php2shell-check.git" },
+  "scripts": {
+    "start": "node server.js",
+    "scan": "node server.js",
+    "audit": "node local-audit.js",
+    "test": "node --test \"test/*.test.*\"",
+    "snapshot": "node scripts/update-snapshot.js",
+    "dev": "npx wrangler dev",
+    "deploy": "npx wrangler deploy",
+    "icons": "python3 make_icons.py"
+  },
+  "engines": { "node": ">=22" }
+}

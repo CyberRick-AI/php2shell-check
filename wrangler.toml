@@ -1,0 +1,20 @@
+name = "php2shell-check"
+main = "src/worker.mjs"
+compatibility_date = "2026-10-01"
+
+# Serves the PWA from ./public. Only /api/* runs the Worker first.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+[vars]
+# "0" = private: scans need the ACCESS_KEY secret (npx wrangler secret put ACCESS_KEY)
+# "1" = public: anyone can scan with no login, limited per IP by SCAN_LIMITER below
+PUBLIC_MODE = "0"
+
+# Per-IP limit used in public mode: 10 scans per minute per connection.
+[[ratelimits]]
+name = "SCAN_LIMITER"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }

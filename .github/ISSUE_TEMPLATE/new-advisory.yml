@@ -1,0 +1,46 @@
+name: New advisory / advisory update
+description: A new PHP vulnerability to check for, or new info (fixed releases, CVSS, exploitation) for an existing one
+title: "[advisory] "
+labels: ["advisory"]
+body:
+  - type: markdown
+    attributes:
+      value: Public information only. **Do not paste exploit code or payloads.**
+  - type: input
+    id: cves
+    attributes:
+      label: CVE ID(s)
+      placeholder: CVE-2026-12345
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: New or update?
+      options: [New advisory, Update to an existing advisory]
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: Affected branches and fixed releases
+      description: e.g. "8.3 fixed in 8.3.37, 8.2 no fix". Say "no fix yet" if there isn't one.
+    validations:
+      required: true
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Settings to change / interim mitigations
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources (https links)
+      description: Vendor advisory, NVD, CERT or a named security firm.
+    validations:
+      required: true
+  - type: checkboxes
+    id: pr
+    attributes:
+      label: Contribution
+      options:
+        - label: I can send a PR for this (see CONTRIBUTING.md > Adding or updating an advisory)

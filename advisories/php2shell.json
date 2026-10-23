@@ -1,0 +1,79 @@
+{
+  "id": "php2shell",
+  "name": "PHP2Shell",
+  "severity": "critical",
+  "detection": "version-compare",
+  "dateAdded": "2026-10-21",
+  "dateUpdated": "2026-10-23",
+  "summary": "Two remote code execution bugs in the PHP runtime, affecting PHP 5.4 and newer on every SAPI (mod_php highest risk, FPM, FrankenPHP, LiteSpeed, php-cgi). Leaked Oct 20, patched Oct 21 2026, exploited in the wild.",
+  "affected": {
+    "minBranch": "5.4",
+    "maxBranch": "8.5",
+    "fixed": { "8.5": "8.5.12", "8.4": "8.4.27", "8.3": "8.3.36", "8.2": "8.2.35" }
+  },
+  "cves": [
+    {
+      "id": "CVE-2026-109618",
+      "title": "RCE via out-of-memory corruption (CVSS v4 9.2)",
+      "detail": {
+        "patched": "Version at or above fix. Only patching fixes this one; config changes do not.",
+        "default": "Only updating PHP fixes this. No setting fully mitigates it."
+      }
+    },
+    {
+      "id": "CVE-2026-109619",
+      "title": "RCE via stale global state (CVSS v4 9.2)",
+      "detail": {
+        "patched": "Version at or above fix.",
+        "default": "Updating is the only complete fix. Turning off session upload progress blocks the confirmed session paths but not other variants."
+      }
+    }
+  ],
+  "verdictText": {
+    "patched": "PHP {version} is at or above the fixed release ({fixed}).",
+    "vulnerable": "PHP {version} is below the fixed release {fixed}.",
+    "noFix": "PHP {branch} is end-of-life upstream: no official release fixes it. It is exposed unless the host backported the patch.",
+    "newer": "PHP {version} is newer than any branch in the advisory. Verify manually.",
+    "older": "PHP {version} predates the {minBranch} floor in the advisory but is long dead. Treat as unsafe and verify."
+  },
+  "headline": {
+    "vulnerable": { "level": "bad", "title": "Action needed: PHP is not patched for PHP2Shell", "sub": "This site discloses a PHP version below the fixed release. Update the PHP runtime, then restart." },
+    "unknown": { "level": "warn", "title": "Cannot confirm: version is hidden", "sub": "The site looks like PHP but does not reveal its version. Check the server directly." },
+    "patched": { "level": "ok", "title": "PHP2Shell: version looks patched", "sub": "The disclosed version is at or above the fixed release. One setting still needs attention for CVE-2026-115560." }
+  },
+  "patch": [
+    { "when": ["vulnerable"], "hasFix": true, "text": "Update PHP {branch} from {version} to {fixed} or newer." },
+    { "when": ["vulnerable"], "hasFix": false, "text": "PHP {branch} gets no upstream fix. Move to a supported branch (8.5.12, 8.4.27 or 8.3.36 and up), or confirm the host has backported the fix (source backports exist for 7.4, 8.0 and 8.1)." },
+    { "when": ["vulnerable"], "text": "Update the PHP runtime itself. Updating WordPress, Laravel or any app does not update PHP; it comes from the server package, the host panel, or the container image." },
+    { "when": ["vulnerable"], "text": "Restart Apache, PHP-FPM and any long-running PHP workers after updating." },
+    { "when": ["vulnerable"], "branch": "8.2", "text": "PHP 8.2 reaches end of life on Dec 31, 2026. Plan a move to 8.3 or newer." },
+    { "when": ["unknown"], "text": "Confirm the PHP version that serves web requests: run php -v and php-fpm -v, check the hosting panel, or run local-audit.js on the server." },
+    { "when": ["unknown"], "text": "Required minimums: 8.5.12, 8.4.27, 8.3.36 or 8.2.35. Anything on 8.1 or older needs an upgrade or a confirmed vendor backport." },
+    { "when": ["unknown"], "text": "On Debian, Ubuntu or RHEL builds, check the package changelog for CVE-2026-109618; vendors backport fixes under old version numbers." },
+    { "when": ["unknown"], "text": "If patched, still confirm Apache and PHP-FPM were restarted afterward." },
+    { "when": ["patched"], "text": "Nothing to patch for PHP2Shell based on the disclosed version. Confirm Apache and PHP-FPM were restarted after the update, since old workers keep running old code." },
+    { "when": ["patched"], "text": "After updating, review memory_limit and post_max_size: the fix adds a hard memory limit that ends the process and skips shutdown handlers." }
+  ],
+  "turnOff": [
+    { "when": ["vulnerable"], "order": 20, "text": "Until you can update (reduces exposure, does NOT fix): set memory_limit=-1 so apps cannot override it, keep post_max_size low, and enforce request-size limits at the web server or proxy. Do not use RLIMIT_AS or RLIMIT_DATA." },
+    { "when": ["vulnerable"], "branch": "8.5", "order": 30, "text": "On PHP 8.5 also set fatal_error_backtraces=0 until updated." }
+  ],
+  "covered": [
+    { "order": 10, "text": "PHP version the site discloses in response headers, compared with the fixed releases ({fixedList})" }
+  ],
+  "notCovered": [
+    { "order": 40, "text": "Whether workers were restarted after patching" }
+  ],
+  "localAudit": {
+    "patched": "PHP {version} >= {fixed}: PHP2Shell fixed (CVE-2026-109618/109619).",
+    "vulnerable": "PHP {version} < {fixed}: VULNERABLE to PHP2Shell. Update the runtime and restart Apache/PHP-FPM/workers. If this is a distro package, check its changelog for CVE-2026-109618 first; vendors backport under old version numbers.",
+    "noFix": "PHP {branch} is end-of-life upstream with no official fix. Vulnerable unless the vendor backported (source backports exist for 7.4, 8.0, 8.1). Check the package changelog for CVE-2026-109618, or upgrade."
+  },
+  "sources": [
+    "https://thehackernews.com/2026/10/php-issues-emergency-patches-for-two.html",
+    "https://watchtowr.com/intelligence/php-cve-2026-109618-faq/",
+    "https://securitylabs.datadoghq.com/articles/php2shell-critical-vulnerabilities-in-php/",
+    "https://www.helpnetsecurity.com/2026/10/21/php2shell-php-vulnerabilities-patched-cve-2026-109618-cve-2026-109619/",
+    "https://patchstack.com/articles/php-major-vulnerability-alert-10-2026/"
+  ]
+}

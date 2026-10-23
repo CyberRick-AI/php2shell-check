@@ -1,0 +1,14 @@
+[
+  { "name": "vulnerable-ubuntu", "headers": { "x-powered-by": "PHP/8.3.30", "server": "Apache/2.4 (Ubuntu)" } },
+  { "name": "vulnerable-82", "headers": { "x-powered-by": "PHP/8.2.20" } },
+  { "name": "vulnerable-85", "headers": { "x-powered-by": "PHP/8.5.3", "cf-ray": "abc" } },
+  { "name": "patched-84", "headers": { "x-powered-by": "PHP/8.4.27" } },
+  { "name": "patched-cloudflare", "headers": { "x-powered-by": "PHP/8.3.36", "server": "cloudflare" } },
+  { "name": "eol-74-modphp", "headers": { "x-powered-by": "PHP/7.4.33", "server": "Apache/2.4.58 mod_php" } },
+  { "name": "server-header", "headers": { "server": "Apache/2.4.58 PHP/8.2.30 mod_php" } },
+  { "name": "future-86", "headers": { "x-powered-by": "PHP/8.6.0" } },
+  { "name": "ancient-53", "headers": { "x-powered-by": "PHP/5.3.29" } },
+  { "name": "hidden-cookie", "headers": { "server": "nginx" }, "cookies": "PHPSESSID=abc; path=/" },
+  { "name": "hidden-wordpress", "headers": { "server": "LiteSpeed" }, "body": "<link href=/wp-content/x.css>" },
+  { "name": "no-php", "headers": { "server": "nginx" } }
+]

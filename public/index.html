@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PHP2Shell Check</title>
+<meta name="description" content="Passive PHP2Shell exposure check with a patch and hardening report.">
+<meta name="theme-color" content="#0b1020">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="P2S Check">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{--bg:#0b1020;--card:#141b34;--line:#26305a;--fg:#e8ecf8;--mut:#8b95b8;--ok:#2ecc71;--bad:#ff4d5e;--warn:#f5a623;--blue:#3b82f6;--cyan:#00e5ff;--neutral:#8b95b8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(32px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+main{max-width:760px;margin:0 auto}
+header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+header img{width:44px;height:44px;border-radius:10px}
+h1{margin:0;font-size:22px;line-height:1.2}
+.sub{color:var(--mut);font-size:13px;margin:2px 0 0}
+.grow{flex:1;min-width:0}
+h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.row{display:flex;gap:10px}
+input[type=text],input[type=password]{width:100%;padding:13px;border-radius:10px;border:1px solid var(--line);background:#0b1020;color:var(--fg);font-size:16px}
+input:focus{outline:2px solid var(--cyan);outline-offset:0}
+button{padding:13px 20px;border:0;border-radius:10px;background:var(--blue);color:#fff;font-size:16px;font-weight:600;cursor:pointer;min-height:48px}
+button.g{background:transparent;border:1px solid var(--line);color:var(--fg);font-weight:500;padding:9px 14px;font-size:14px;min-height:40px}
+button:disabled{opacity:.5;cursor:not-allowed}
+label.chk{display:flex;gap:10px;margin-top:12px;color:var(--mut);font-size:14px;align-items:flex-start}
+label.chk input{width:20px;height:20px;margin-top:2px;flex:none}
+details summary{cursor:pointer;color:var(--mut);font-size:14px;margin-top:12px}
+details .row{margin-top:10px}
+.banner{border-left:6px solid var(--neutral)}.banner.bad{border-color:var(--bad)}.banner.ok{border-color:var(--ok)}.banner.warn{border-color:var(--warn)}
+.banner h3{margin:0 0 4px;font-size:20px;line-height:1.25}.banner p{margin:0;color:var(--mut)}
+.meta{color:var(--mut);font-size:13px;margin-top:10px;word-break:break-word}
+.cve{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}.cve:first-of-type{border-top:0}
+.pill{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;margin-top:2px;color:#0b1020;white-space:nowrap}
+.pill.patched{background:var(--ok)}.pill.vulnerable{background:var(--bad)}.pill.unknown,.pill.unfixed{background:var(--warn)}.pill.not-detected{background:var(--neutral)}
+.cve b{display:block;font-size:15px}.cve span{color:var(--mut);font-size:14px}
+ol,ul{margin:0;padding-left:20px}li{margin:7px 0}
+.act h2{color:var(--fg)}.act.p{border-top:4px solid var(--bad)}.act.d{border-top:4px solid var(--warn)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:640px){.two{grid-template-columns:1fr}.row.stack{flex-direction:column}.row.stack button{width:100%}}
+.two .card{margin:0}.yes li::marker{color:var(--ok)}.no li::marker{color:var(--bad)}
+.note{background:#1b2347;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:14px}
+.tools{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+small{color:var(--mut)}
+#install{display:none}
+#iosHint{display:none;font-size:13px;color:var(--mut);margin:0 0 14px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--cyan);border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes s{to{transform:rotate(360deg)}}
+@media print{body{background:#fff;color:#000}.card{background:#fff;border-color:#bbb}.tools,#scanbox,#install,#iosHint,header img{display:none!important}.meta,.cve span,.banner p,h2,small,.sub{color:#444}.note{background:#eee}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <img src="/icons/icon-192.png" alt="" width="44" height="44">
+  <div class="grow"><h1>PHP2Shell Check</h1><p class="sub">CVE-2026-109618 · -109619 · -115560</p></div>
+  <button class="g" id="install" type="button">Install app</button>
+</header>
+<p id="iosHint">To install on iPhone: tap the Share button in Safari, then <b>Add to Home Screen</b>.</p>
+
+<div class="card" id="scanbox">
+  <div class="row stack">
+    <input id="u" type="text" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="clientsite.com" aria-label="Website address">
+    <button id="go" type="button" disabled>Scan</button>
+  </div>
+  <label class="chk"><input id="ok" type="checkbox"> <span>I own this site or have written permission from the owner to scan it.</span></label>
+  <details id="settings" hidden>
+    <summary>Access key</summary>
+    <div class="row"><input id="key" type="password" placeholder="Paste your access key" autocomplete="off" aria-label="Access key"><button class="g" id="saveKey" type="button">Save</button></div>
+  </details>
+</div>
+
+<div id="out" aria-live="polite"></div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ESC[c]);
+const LBL = { patched: 'PATCHED', vulnerable: 'VULNERABLE', unknown: "CAN'T CONFIRM", unfixed: 'NO FIX YET', 'not-detected': 'N/A' };
+const li = (a) => a.map((x) => '<li>' + esc(x) + '</li>').join('');
+
+// localStorage can be missing or throw (private mode), so every access is wrapped.
+const store = {
+  get(k) { try { return localStorage.getItem(k) || ''; } catch { return ''; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { /* ignore */ } },
+};
+
+let last = null;
+
+function render(d) {
+  last = d;
+  const R = d.report, H = R.headline;
+  const ipPart = d.ip ? ' (' + esc(d.ip) + ')' : '';
+  let h = '<div class="card banner ' + H.level + '"><h3>' + esc(H.title) + '</h3><p>' + esc(H.sub) + '</p>'
+    + '<div class="meta">' + esc(d.host) + ipPart + ' · HTTP ' + esc(d.status) + ' · PHP version: <b>' + esc(d.phpVersion || 'hidden') + '</b> · ' + esc(new Date(d.scannedAt).toLocaleString()) + '</div></div>';
+  h += '<div class="tools"><button class="g" id="cp" type="button">Copy report</button><button class="g" id="pr" type="button">Print / Save PDF</button></div>';
+  h += '<div class="card"><h2>Vulnerability status</h2>' + R.cves.map((c) =>
+    '<div class="cve"><span class="pill ' + esc(c.status) + '">' + esc(LBL[c.status] || c.status) + '</span><div><b>' + esc(c.id) + ' · ' + esc(c.title) + '</b><span>' + esc(c.detail) + '</span></div></div>').join('') + '</div>';
+  h += '<div class="card act p"><h2>What needs to be patched</h2><ol>' + li(R.patch) + '</ol></div>';
+  h += '<div class="card act d"><h2>What needs to be turned off or changed</h2><ol>' + li(R.disable) + '</ol></div>';
+  if (R.notes.length || d.evidence.length) {
+    h += '<div class="card"><h2>What the scan saw</h2>' + R.notes.map((n) => '<div class="note">' + esc(n) + '</div>').join('') + (d.evidence.length ? '<ul>' + li(d.evidence) + '</ul>' : '') + '</div>';
+  }
+  h += '<div class="two"><div class="card yes"><h2>What this scan covers</h2><ul>' + li(R.covered) + '</ul></div><div class="card no"><h2>What it does NOT cover</h2><ul>' + li(R.notCovered) + '</ul></div></div>';
+  h += '<p><small>Passive header check only. No exploit traffic is sent. For hidden versions and CVE-2026-115560, run local-audit.js on the server. CVE-2026-115560 has no fixed PHP release yet: re-check when PHP ships its bugfix release.</small></p>';
+  $('out').innerHTML = h;
+  $('pr').onclick = () => window.print();
+  $('cp').onclick = () => {
+    const t = ['PHP2Shell report: ' + d.host, H.title, H.sub, 'PHP version: ' + (d.phpVersion || 'hidden'), '', 'STATUS']
+      .concat(R.cves.map((c) => '- ' + c.id + ': ' + (LBL[c.status] || c.status)), ['', 'PATCH'], R.patch.map((x, i) => (i + 1) + '. ' + x),
+        ['', 'TURN OFF / CHANGE'], R.disable.map((x, i) => (i + 1) + '. ' + x), ['', 'NOT COVERED'], R.notCovered.map((x) => '- ' + x)).join('\n');
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { $('cp').textContent = 'Copied'; }, () => { $('cp').textContent = 'Copy failed'; });
+  };
+  $('out').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showError(msg, askKey) {
+  $('out').innerHTML = '<div class="card banner bad"><h3>' + esc(msg) + '</h3></div>';
+  if (askKey) { $('settings').hidden = false; $('settings').open = true; $('key').focus(); }
+}
+
+const refreshGo = () => { $('go').disabled = !$('ok').checked; };
+
+async function run() {
+  const u = $('u').value.trim();
+  if (!u) { $('u').focus(); return; }
+  $('go').disabled = true;
+  $('out').innerHTML = '<div class="card"><span class="spin"></span>Scanning ' + esc(u) + '…</div>';
+  try {
+    const r = await fetch('/api/scan?url=' + encodeURIComponent(u), { headers: { 'x-access-key': store.get('p2s_key') }, cache: 'no-store' });
+    let d = null;
+    try { d = await r.json(); } catch { /* non-JSON error page */ }
+    if (r.status === 401) return showError(store.get('p2s_key') ? 'Access key rejected. Re-enter it below.' : 'Enter your access key below.', true);
+    if (!r.ok || !d || d.error) return showError((d && d.error) || 'Scan failed (HTTP ' + r.status + ')');
+    render(d);
+  } catch {
+    showError(navigator.onLine === false ? 'You are offline. Scanning needs a connection.' : 'Could not reach the scanner. Try again.');
+  } finally { refreshGo(); }
+}
+
+$('ok').onchange = refreshGo;
+$('go').onclick = run;
+$('u').onkeydown = (e) => { if (e.key === 'Enter' && $('ok').checked) run(); };
+$('key').value = store.get('p2s_key');
+$('saveKey').onclick = () => { store.set('p2s_key', $('key').value.trim()); $('saveKey').textContent = 'Saved'; setTimeout(() => { $('saveKey').textContent = 'Save'; }, 1500); };
+
+// ---- PWA install + service worker ----
+let deferred = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferred = e; $('install').style.display = 'inline-block'; });
+$('install').onclick = async () => { if (!deferred) return; deferred.prompt(); await deferred.userChoice; deferred = null; $('install').style.display = 'none'; };
+window.addEventListener('appinstalled', () => { $('install').style.display = 'none'; });
+const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone) $('iosHint').style.display = 'block';
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+</script>
+</body>
+</html>
