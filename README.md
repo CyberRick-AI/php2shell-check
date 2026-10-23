@@ -25,6 +25,25 @@ node server.js
 
 Open **http://localhost:3000**. In Chrome or Edge, click the install icon in the address bar to get it as a desktop app.
 
+### Try it without scanning a real site (demo mode)
+
+Most real sites hide their PHP version, so "Can't confirm" or "No PHP detected" is a normal result. To see every verdict, run the built-in fake targets (they only send PHP-style headers; nothing leaves your machine):
+
+```bash
+npm run demo
+```
+
+Open http://localhost:3000 and scan any of these (include `http://`):
+
+| Address | Expected result |
+|---|---|
+| `http://localhost:8081/vulnerable` | Vulnerable (PHP 8.3.30) |
+| `http://localhost:8081/patched` | Patched (PHP 8.4.27) |
+| `http://localhost:8081/eol` | Vulnerable, end-of-life PHP 7.4 with mod_php |
+| `http://localhost:8081/hidden` | Can't confirm (PHP session cookie, no version) |
+| `http://localhost:8081/wordpress` | Can't confirm (WordPress markers) |
+| `http://localhost:8081/nophp` | No PHP detected |
+
 CLI, prints the JSON report:
 
 ```bash

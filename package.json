@@ -9,6 +9,7 @@
     "start": "node server.js",
     "scan": "node server.js",
     "audit": "node local-audit.js",
+    "demo": "node scripts/demo.js",
     "test": "node --test \"test/*.test.*\"",
     "snapshot": "node scripts/update-snapshot.js",
     "dev": "npx wrangler dev",
